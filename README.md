@@ -13,13 +13,13 @@
 <pre><code class="has-line-data" data-line-start="3" data-line-end="16" class="language-git">public function up()
     {
         Schema::create('activites', function (Blueprint $table) {
-            $table-&gt;id();
-            $table-&gt;string('titre', 80);
-            $table-&gt;text('description')-&gt;nullable();
-            $table-&gt;unsignedInteger('duree')-&gt;default(10);
-            $table-&gt;unsignedInteger('difficulte');
-            $table-&gt;unsignedInteger('age_max')-&gt;default(1);
-            $table-&gt;timestamps();
+            $table->id();
+            $table->string('titre', 80);
+            $table->text('description')->nullable();
+            $table->unsignedInteger('duree')->default(10);
+            $table->unsignedInteger('difficulte');
+            $table->unsignedInteger('age_max')->default(1);
+            $table->timestamps();
         });
     }
 </code></pre>
@@ -29,11 +29,11 @@
     {
         return [
             // instead of using regex you can use the function : title()
-            'titre' =&gt; $this-&gt;faker-&gt;unique()-&gt;regexify('[A-Za-z0-9]{1,80}'),
-            'description' =&gt; $this-&gt;faker-&gt;text(),
-            'duree' =&gt; $this-&gt;faker-&gt;numberBetween(10),
-            'difficulte' =&gt; $this-&gt;faker-&gt;numberBetween(1, 5),
-            'age_max' =&gt; $this-&gt;faker-&gt;numberBetween(1, 15),
+            'titre' => $this->faker->unique()->regexify('[A-Za-z0-9]{1,80}'),
+            'description' => $this->faker->text(),
+            'duree' => $this->faker->numberBetween(10),
+            'difficulte' => $this->faker->numberBetween(1, 5),
+            'age_max' => $this->faker->numberBetween(1, 15),
         ];
     }
 </code></pre>
@@ -45,7 +45,7 @@
         // !You need to make sure that you have created the activites model, 
         // !so you can use it here
 
-        \App\Models\ActivitesModel::factory(10)-&gt;create();
+        \App\Models\ActivitesModel::factory(10)->create();
 
     }
 </code></pre>
@@ -68,91 +68,95 @@
 <h2 class="code-line" data-line-start=66 data-line-end=67 ><a id="b__la_fonction_store_66"></a>b - la fonction store:</h2>
 <pre><code class="has-line-data" data-line-start="68" data-line-end="82" class="language-git">public function store(Request $request)
     {
-        $validatedData = $request-&gt;validate([
-            'titre' =&gt; 'required|unique:activites',
-            'difficulte' =&gt; 'required|integer|min:1|max:5',
-            'duree' =&gt; 'required|integer|min:10',
-            'age_max' =&gt; 'required|integer|min:1|max:15',
+        $validatedData = $request->validate([
+            'titre' => 'required|unique:activites',
+            'difficulte' => 'required|integer|min:1|max:5',
+            'duree' => 'required|integer|min:10',
+            'age_max' => 'required|integer|min:1|max:15',
         ]);
 
         ActivitesModel::create($validatedData);
 
-        return redirect()-&gt;route('index')-&gt;with('success', 'Activité ajoute avec succès.');
+        return redirect()->route('index')->with('success', 'Activité ajoute avec succès.');
     }
 </code></pre>
 <h2 class="code-line" data-line-start=82 data-line-end=83 ><a id="b__la_fonction_update_82"></a>b - la fonction update:</h2>
 <pre><code class="has-line-data" data-line-start="84" data-line-end="98" class="language-git">public function update(Request $request, ActivitesModel $activite)
     {
-        $validatedData = $request-&gt;validate([
-            'titre' =&gt; 'required|unique:activites,titre,' . $activite-&gt;id . '|regex:/^[A-Za-z0-9\s]+$/',
-            'difficulte' =&gt; 'required|integer|min:1|max:5',
-            'duree' =&gt; 'required|integer|min:10',
-            'age_max' =&gt; 'required|integer|min:1|max:15',
+        $validatedData = $request->validate([
+            'titre' => 'required|unique:activites,titre,' . $activite->id . '|regex:/^[A-Za-z0-9\s]+$/',
+            'difficulte' => 'required|integer|min:1|max:5',
+            'duree' => 'required|integer|min:10',
+            'age_max' => 'required|integer|min:1|max:15',
         ]);
 
-        $activite-&gt;update($validatedData);
+        $activite->update($validatedData);
 
-        return redirect()-&gt;route('activites.index')-&gt;with('success', 'Activité mise à jour avec succès.');
+        return redirect()->route('activites.index')->with('success', 'Activité mise à jour avec succès.');
     }
 </code></pre>
 <h2 class="code-line" data-line-start=99 data-line-end=100 ><a id="b__la_fonction_destroy_99"></a>b - la fonction destroy:</h2>
 <pre><code class="has-line-data" data-line-start="101" data-line-end="108" class="language-git">public function destroy(ActivitesModel $activite)
     {
-        $activite-&gt;delete();
+        $activite->delete();
 
-        return redirect()-&gt;route('activites.index')-&gt;with('success', 'Activité supprimée avec succès.');
+        return redirect()->route('activites.index')->with('success', 'Activité supprimée avec succès.');
     }
 </code></pre>
+
 <h2 class="code-line" data-line-start=108 data-line-end=109 ><a id="la_vue_index__108"></a>la vue index :</h2>
-<pre><code class="has-line-data" data-line-start="111" data-line-end="160" class="language-php">&lt;!DOCTYPE html&gt;
-&lt;html lang=<span class="hljs-string">"en"</span>&gt;
-&lt;head&gt;
-  &lt;meta charset=<span class="hljs-string">"UTF-8"</span>&gt;
-  &lt;meta name=<span class="hljs-string">"viewport"</span> content=<span class="hljs-string">"width=device-width, initial-scale=1.0"</span>&gt;
-  &lt;meta http-equiv=<span class="hljs-string">"X-UA-Compatible"</span> content=<span class="hljs-string">"ie=edge"</span>&gt;
-  &lt;title&gt;gestion des activites&lt;/title&gt;
-&lt;/head&gt;
-&lt;body&gt;
 
-    &lt;h1&gt;Liste des activités&lt;/h1&gt;
+```php
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>gestion des activites</title>
+</head>
+<body>
 
-    &lt;table&gt;
-        &lt;thead&gt;
-            &lt;tr&gt;
-                &lt;th&gt;Titre&lt;/th&gt;
-                &lt;th&gt;Description&lt;/th&gt;
-                &lt;th&gt;Durée&lt;/th&gt;
-                &lt;th&gt;Difficulté&lt;/th&gt;
-                &lt;th&gt;Âge maximum&lt;/th&gt;
-                &lt;th&gt;Actions&lt;/th&gt;
-            &lt;/tr&gt;
-        &lt;/thead&gt;
-        &lt;tbody&gt;
-            @<span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$activites</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$activite</span>)
-                &lt;tr&gt;
-                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;titre }}&lt;/td&gt;
-                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;description }}&lt;/td&gt;
-                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;duree }}&lt;/td&gt;
-                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;difficulte }}&lt;/td&gt;
-                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;age_max }}&lt;/td&gt;
-                    &lt;td&gt;
-                        &lt;a href=<span class="hljs-string">"{{ route('edit', $activite-&gt;id) }}"</span>&gt;Modifier&lt;/a&gt;
-                        &lt;form action=<span class="hljs-string">"{{ route('destroy', $activite-&gt;id) }}"</span> method=<span class="hljs-string">"POST"</span>&gt;
+    <h1>Liste des activités</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Durée</th>
+                <th>Difficulté</th>
+                <th>Âge maximum</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($activites as $activite)
+                <tr>
+                    <td>{{ $activite->titre }}</td>
+                    <td>{{ $activite->description }}</td>
+                    <td>{{ $activite->duree }}</td>
+                    <td>{{ $activite->difficulte }}</td>
+                    <td>{{ $activite->age_max }}</td>
+                    <td>
+                        <a href="{{ route('edit', $activite->id) }}">Modifier</a>
+                        <form action="{{ route('destroy', $activite->id) }}" method="POST">
                             @csrf
-                            @method(<span class="hljs-string">'DELETE'</span>)
-                            &lt;button type=<span class="hljs-string">"submit"</span>&gt;Supprimer&lt;/button&gt;
-                        &lt;/form&gt;
-                    &lt;/td&gt;
-                &lt;/tr&gt;
-            @<span class="hljs-keyword">endforeach</span>
-        &lt;/tbody&gt;
-    &lt;/table&gt;
+                            @method('DELETE')
+                            <button type="submit">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
 
-    &lt;a href=<span class="hljs-string">"{{ route('create') }}"</span>&gt;Ajouter une activité&lt;/a&gt;
+    <a href="{{ route('create') }}">Ajouter une activité</a>
 
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
+</body>
+</html>
+```
+
 <h1 class="code-line" data-line-start=164 data-line-end=165 ><a id="Installation_164"></a>Installation:</h1>
 <h2 class="code-line" data-line-start=165 data-line-end=166 ><a id="To_set_up_the_application_locally_follow_these_steps_165"></a>To set up the application locally, follow these steps:</h2>
 <blockquote>
