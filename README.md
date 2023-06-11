@@ -7,60 +7,163 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<h1 class="code-line" data-line-start=0 data-line-end=1 ><a id="1__Crer_le_fichier_de_migration_pour_la_table_activits_0"></a>1 - Créer le fichier de migration pour la table “activités”:</h1>
+<h2 class="code-line" data-line-start=1 data-line-end=2 ><a id="_Pour_crer_la_table_activits_dans_la_base_de_donnes_vous_pouvez_utiliser_le_code_suivant_pour_la_migration__1"></a><em>Pour créer la table “activités” dans la base de données, vous pouvez utiliser le code suivant pour la migration:</em></h2>
+<pre><code class="has-line-data" data-line-start="3" data-line-end="16" class="language-git">public function up()
+    {
+        Schema::create('activites', function (Blueprint $table) {
+            $table-&gt;id();
+            $table-&gt;string('titre', 80);
+            $table-&gt;text('description')-&gt;nullable();
+            $table-&gt;unsignedInteger('duree')-&gt;default(10);
+            $table-&gt;unsignedInteger('difficulte');
+            $table-&gt;unsignedInteger('age_max')-&gt;default(1);
+            $table-&gt;timestamps();
+        });
+    }
+</code></pre>
+<h1 class="code-line" data-line-start=17 data-line-end=18 ><a id="Crer_la_factory_pour_la_table_activits_17"></a>Créer la factory pour la table “activités”:</h1>
+<h2 class="code-line" data-line-start=18 data-line-end=19 ><a id="Pour_gnrer_des_donnes_fictives_pour_la_table_activits_vous_pouvez_crer_une_factory_en_utilisant_le_code_suivant_18"></a>Pour générer des données fictives pour la table “activités”, vous pouvez créer une factory en utilisant le code suivant:</h2>
+<pre><code class="has-line-data" data-line-start="20" data-line-end="32" class="language-git">public function definition(): array
+    {
+        return [
+            // instead of using regex you can use the function : title()
+            'titre' =&gt; $this-&gt;faker-&gt;unique()-&gt;regexify('[A-Za-z0-9]{1,80}'),
+            'description' =&gt; $this-&gt;faker-&gt;text(),
+            'duree' =&gt; $this-&gt;faker-&gt;numberBetween(10),
+            'difficulte' =&gt; $this-&gt;faker-&gt;numberBetween(1, 5),
+            'age_max' =&gt; $this-&gt;faker-&gt;numberBetween(1, 15),
+        ];
+    }
+</code></pre>
+<h1 class="code-line" data-line-start=33 data-line-end=34 ><a id="Ajouter_des_donnes_fictives__la_table_activits_dans_le_DatabaseSeeder_33"></a>Ajouter des données fictives à la table “activités” dans le DatabaseSeeder:</h1>
+<h2 class="code-line" data-line-start=34 data-line-end=35 ><a id="Dans_la_mthode_run_du_fichier_DatabaseSeeder_vous_pouvez_ajouter_les_dix_activits__la_table_activits_en_utilisant_la_factory_cre_prcdemment_Voici_un_exemple_de_code_34"></a>Dans la méthode run du fichier DatabaseSeeder, vous pouvez ajouter les dix activités à la table “activités” en utilisant la factory créée précédemment. Voici un exemple de code:</h2>
+<pre><code class="has-line-data" data-line-start="37" data-line-end="47" class="language-git">public function run(): void
+    {
+        // !--note! 
+        // !You need to make sure that you have created the activites model, 
+        // !so you can use it here
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+        \App\Models\ActivitesModel::factory(10)-&gt;create();
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+    }
+</code></pre>
+<h1 class="code-line" data-line-start=47 data-line-end=48 ><a id="Activites_Model__47"></a>Activites Model :</h1>
+<pre><code class="has-line-data" data-line-start="49" data-line-end="56" class="language-git">class ActivitesModel extends Model
+{
+    use HasFactory;
+    protected $fillable = ['titre' , 'description' , 'duree' , 'difficulte' , 'age_max'];
+}
 
-## Learning Laravel
+</code></pre>
+<h1 class="code-line" data-line-start=57 data-line-end=58 ><a id="Crer_le_contrleur_ActiviteController_pour_les_oprations_CRUD_57"></a>Créer le contrôleur “ActiviteController” pour les opérations CRUD:</h1>
+<h2 class="code-line" data-line-start=58 data-line-end=59 ><a id="a__la_fonction_index_58"></a>a - la fonction index:</h2>
+<pre><code class="has-line-data" data-line-start="60" data-line-end="66" class="language-git">public function index()
+    {
+        $activites = ActivitesModel::all();
+        return view('index', compact('activites'));
+    }
+</code></pre>
+<h2 class="code-line" data-line-start=66 data-line-end=67 ><a id="b__la_fonction_store_66"></a>b - la fonction store:</h2>
+<pre><code class="has-line-data" data-line-start="68" data-line-end="82" class="language-git">public function store(Request $request)
+    {
+        $validatedData = $request-&gt;validate([
+            'titre' =&gt; 'required|unique:activites',
+            'difficulte' =&gt; 'required|integer|min:1|max:5',
+            'duree' =&gt; 'required|integer|min:10',
+            'age_max' =&gt; 'required|integer|min:1|max:15',
+        ]);
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+        ActivitesModel::create($validatedData);
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+        return redirect()-&gt;route('index')-&gt;with('success', 'Activité ajoute avec succès.');
+    }
+</code></pre>
+<h2 class="code-line" data-line-start=82 data-line-end=83 ><a id="b__la_fonction_update_82"></a>b - la fonction update:</h2>
+<pre><code class="has-line-data" data-line-start="84" data-line-end="98" class="language-git">public function update(Request $request, ActivitesModel $activite)
+    {
+        $validatedData = $request-&gt;validate([
+            'titre' =&gt; 'required|unique:activites,titre,' . $activite-&gt;id . '|regex:/^[A-Za-z0-9\s]+$/',
+            'difficulte' =&gt; 'required|integer|min:1|max:5',
+            'duree' =&gt; 'required|integer|min:10',
+            'age_max' =&gt; 'required|integer|min:1|max:15',
+        ]);
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+        $activite-&gt;update($validatedData);
 
-## Laravel Sponsors
+        return redirect()-&gt;route('activites.index')-&gt;with('success', 'Activité mise à jour avec succès.');
+    }
+</code></pre>
+<h2 class="code-line" data-line-start=99 data-line-end=100 ><a id="b__la_fonction_destroy_99"></a>b - la fonction destroy:</h2>
+<pre><code class="has-line-data" data-line-start="101" data-line-end="108" class="language-git">public function destroy(ActivitesModel $activite)
+    {
+        $activite-&gt;delete();
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+        return redirect()-&gt;route('activites.index')-&gt;with('success', 'Activité supprimée avec succès.');
+    }
+</code></pre>
+<h2 class="code-line" data-line-start=108 data-line-end=109 ><a id="la_vue_index__108"></a>la vue index :</h2>
+<pre><code class="has-line-data" data-line-start="111" data-line-end="160" class="language-php">&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="hljs-string">"en"</span>&gt;
+&lt;head&gt;
+  &lt;meta charset=<span class="hljs-string">"UTF-8"</span>&gt;
+  &lt;meta name=<span class="hljs-string">"viewport"</span> content=<span class="hljs-string">"width=device-width, initial-scale=1.0"</span>&gt;
+  &lt;meta http-equiv=<span class="hljs-string">"X-UA-Compatible"</span> content=<span class="hljs-string">"ie=edge"</span>&gt;
+  &lt;title&gt;gestion des activites&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
 
-### Premium Partners
+    &lt;h1&gt;Liste des activités&lt;/h1&gt;
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+    &lt;table&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;Titre&lt;/th&gt;
+                &lt;th&gt;Description&lt;/th&gt;
+                &lt;th&gt;Durée&lt;/th&gt;
+                &lt;th&gt;Difficulté&lt;/th&gt;
+                &lt;th&gt;Âge maximum&lt;/th&gt;
+                &lt;th&gt;Actions&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            @<span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$activites</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$activite</span>)
+                &lt;tr&gt;
+                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;titre }}&lt;/td&gt;
+                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;description }}&lt;/td&gt;
+                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;duree }}&lt;/td&gt;
+                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;difficulte }}&lt;/td&gt;
+                    &lt;td&gt;{{ <span class="hljs-variable">$activite</span>-&gt;age_max }}&lt;/td&gt;
+                    &lt;td&gt;
+                        &lt;a href=<span class="hljs-string">"{{ route('edit', $activite-&gt;id) }}"</span>&gt;Modifier&lt;/a&gt;
+                        &lt;form action=<span class="hljs-string">"{{ route('destroy', $activite-&gt;id) }}"</span> method=<span class="hljs-string">"POST"</span>&gt;
+                            @csrf
+                            @method(<span class="hljs-string">'DELETE'</span>)
+                            &lt;button type=<span class="hljs-string">"submit"</span>&gt;Supprimer&lt;/button&gt;
+                        &lt;/form&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+            @<span class="hljs-keyword">endforeach</span>
+        &lt;/tbody&gt;
+    &lt;/table&gt;
 
-## Contributing
+    &lt;a href=<span class="hljs-string">"{{ route('create') }}"</span>&gt;Ajouter une activité&lt;/a&gt;
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h1 class="code-line" data-line-start=164 data-line-end=165 ><a id="Installation_164"></a>Installation:</h1>
+<h2 class="code-line" data-line-start=165 data-line-end=166 ><a id="To_set_up_the_application_locally_follow_these_steps_165"></a>To set up the application locally, follow these steps:</h2>
+<blockquote>
+<p class="has-line-data" data-line-start="166" data-line-end="171">1 - Clone the repository from GitHub.<br>
+2 - Configure the database connection in the .env file.<br>
+3 - Run migrations to create the “activities” table.<br>
+4 - Seed the database with sample data using the DatabaseSeeder.<br>
+5 - Serve the application using a local development server.</p>
+</blockquote>
+<p class="has-line-data" data-line-start="173" data-line-end="174">Contributions to this project are welcome. If you encounter any issues or have suggestions for improvements, please open an issue on the GitHub repository. You can also fork the project, make changes, and submit a pull request.</p>
+<h2 class="code-line" data-line-start=175 data-line-end=176 ><a id="License_175"></a>License</h2>
+<p class="has-line-data" data-line-start="176" data-line-end="179">Wizardy :<br>
+<a href="https://github.com/ElazzouziHassan"><img src="https://travis-ci.org/joemccann/dillinger.svg?branch=master" alt="Build Status"></a><br>
+<strong>Free Software, Hell Yeah!</strong></p>
