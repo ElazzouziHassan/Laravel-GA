@@ -12,7 +12,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        // !--note! 
+        // !You need to make sure that you have created the activites model, 
+        // !so you can use it here
+
+        \App\Models\ActivitesModel::factory(10)->create();
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',
